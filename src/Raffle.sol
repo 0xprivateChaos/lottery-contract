@@ -3,7 +3,8 @@ pragma solidity ^0.8.18;
 
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import {VRFCoordinatorV2PlusInterface} from "./interfaces/VRFCoordinatorV2PlusInterface.sol";
+import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
+//import {VRFCoordinatorV2PlusInterface} from "./interfaces/VRFCoordinatorV2PlusInterface.sol";
 
 /**
  * @title Raffle contract
@@ -33,7 +34,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_interval;
-    VRFCoordinatorV2PlusInterface private immutable i_vrfCoordinator;
+    IVRFCoordinatorV2Plus private immutable i_vrfCoordinator;
     bytes32 private immutable i_gasLane;
     uint256 private immutable i_subscriptionId;
     uint32 private immutable i_callbackGasLimit;
@@ -50,16 +51,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
     event PickedWinner(address indexed winner);
 
     constructor(
-        uint256 _entranceFee,
+        uint256 entranceFee,
         uint256 interval,
         address vrfCoordinator,
         bytes32 gasLane,
         uint256 subscriptionId,
         uint32 callbackGasLimit
     ) VRFConsumerBaseV2Plus(vrfCoordinator) {
-        i_entranceFee = _entranceFee;
+        i_entranceFee = entranceFee;
         i_interval = interval;
-        i_vrfCoordinator = VRFCoordinatorV2PlusInterface(vrfCoordinator);
+        i_vrfCoordinator = IVRFCoordinatorV2Plus(vrfCoordinator);
         i_gasLane = gasLane;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
@@ -119,7 +120,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         );
     }
 
-    function fulfillRandomWords(uint256 /* requestId */, uint256[] calldata randomWords) internal override {
+    function fulfillRandomWords(uint256, /* requestId */ uint256[] calldata randomWords) internal override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable winner = s_players[indexOfWinner];
         s_recentWinner = winner;
@@ -138,5 +139,9 @@ contract Raffle is VRFConsumerBaseV2Plus {
      */
     function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffleState() external view returns (RaffleState) {
+        return s_raffleState;
     }
 }
