@@ -1,23 +1,16 @@
 //SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.18;
 
-import {VRFCoordinatorV2Interface} from "@chainlink/contracts/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {VRFCoordinatorV2PlusInterface} from "./interfaces/VRFCoordinatorV2PlusInterface.sol";
 
-interface VRFCoordinatorV2PlusInterface {
-    function requestRandomWords(VRFV2PlusClient.RandomWordsRequest calldata request)
-        external
-        returns (uint256 requestId);
-}
 /**
  * @title Raffle contract
  * @author Aman
  * @notice This contract is used to create a raffle
  * @dev Implements Chainlink VRFv2.5
  */
-
 contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__NotEnoughEntranceFee();
     error Raffle__TransferFailed();
@@ -27,7 +20,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
      * Type Declarations
      */
     enum RaffleState {
-        OPEN, 
+        OPEN,
         CALCULATING
     }
 
@@ -53,6 +46,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
      * Events
      */
     event EnteredRaffle(address indexed player);
+    event PickedWinner(address indexed winner);
 
     constructor(
         uint256 _entranceFee,
@@ -109,14 +103,17 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
-        uint256 sindexOfWinner = randomWords[0] % s_players.length;
-        address payable winner = s_players[sindexOfWinner];
+        uint256 indexOfWinner = randomWords[0] % s_players.length;
+        address payable winner = s_players[indexOfWinner];
         s_recentWinner = winner;
         s_raffleState = RaffleState.OPEN;
-        (bool success, ) = winner.call{value: address(this).balance}("");
-        if(!success) {
+        s_players = new address payable[](0);
+        s_lastTimeStamp = block.timestamp;
+        emit PickedWinner(winner);
+        (bool success,) = winner.call{value: address(this).balance}("");
+        if (!success) {
             revert Raffle__TransferFailed();
-        }   
+        }
     }
 
     /**
