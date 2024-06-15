@@ -7,10 +7,10 @@ import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/interface
 //import {VRFCoordinatorV2PlusInterface} from "./interfaces/VRFCoordinatorV2PlusInterface.sol";
 
 /**
- * @title Raffle contract
- * @author Aman
+ * @title Raffle
+ * @author privateChaos
  * @notice This contract is used to create a raffle
- * @dev Implements Chainlink VRFv2.5
+ * @dev This contract heavily implements the chainlink VRF and Automation
  */
 contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__NotEnoughEntranceFee();
@@ -98,7 +98,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         return (upkeepNeeded, "");
     }
 
-    function performUpkeep() external {
+    function performUpkeep(bytes calldata /* performData */ ) external {
         (bool upkeepNeeded,) = checkUpkeep("");
         if (!upkeepNeeded) {
             revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
@@ -111,11 +111,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 requestConfirmations: REQUEST_CONFIRMATIONS,
                 callbackGasLimit: i_callbackGasLimit,
                 numWords: NUM_WORDS,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({
-                        nativePayment: true // true (enableNativePayment)
-                    })
-                )
+                // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
             })
         );
     }
@@ -143,5 +140,9 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getRaffleState() external view returns (RaffleState) {
         return s_raffleState;
+    }
+
+    function getPlayer(uint256 indexOfPlayer) external view returns (address) {
+        return s_players[indexOfPlayer];
     }
 }
