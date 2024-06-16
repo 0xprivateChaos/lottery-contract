@@ -2,8 +2,8 @@
 pragma solidity ^0.8.18;
 
 import {Script} from "forge-std/Script.sol";
-import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
-// import {VRFCoordinatorV2PlusMock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2PlusMock.sol";
+import {VRFCoordinatorV2PlusMock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2PlusMock.sol";
+import {LinkToken} from "../test/mocks/LinkToken.sol";
 
 contract HelperConfig is Script {
     NetworkConfig public activeNetworkConfig;
@@ -15,6 +15,7 @@ contract HelperConfig is Script {
         bytes32 gasLane;
         uint256 subscriptionId;
         uint32 callbackGasLimit;
+        address linkToken;
     }
 
     constructor() {
@@ -29,10 +30,11 @@ contract HelperConfig is Script {
         return NetworkConfig({
             entranceFee: 0.01 ether,
             interval: 30,
-            vrfCoordinator: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625,
-            gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
-            subscriptionId: 0,
-            callbackGasLimit: 500000
+            vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
+            gasLane: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
+            subscriptionId: 37579565110489551736648458513670485533506219546685134194333489296370124077983,
+            callbackGasLimit: 500000,
+            linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789
         });
     }
 
@@ -43,10 +45,10 @@ contract HelperConfig is Script {
 
         uint96 baseFee = 0.25 ether; // 0.25 LINK
         uint96 gasPriceLink = 1e9; // 1 GWEI LINK
-        int256 weiPerUnitLink = 4746500000000000;
 
         vm.startBroadcast();
-        VRFCoordinatorV2_5Mock vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(baseFee, gasPriceLink, weiPerUnitLink);
+        VRFCoordinatorV2PlusMock vrfCoordinatorMock = new VRFCoordinatorV2PlusMock(baseFee, gasPriceLink);
+        LinkToken linkToken = new LinkToken();
         vm.stopBroadcast();
 
         return NetworkConfig({
@@ -55,7 +57,8 @@ contract HelperConfig is Script {
             vrfCoordinator: address(vrfCoordinatorMock),
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 0, // script will add this
-            callbackGasLimit: 500000
+            callbackGasLimit: 500000,
+            linkToken: address(linkToken)
         });
     }
 }
