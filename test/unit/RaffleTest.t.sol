@@ -117,9 +117,4 @@ contract RaffleTest is Test {
         assert(upkeepNeeded);
     }
 
-    //////////////////////////
-    //    PERFORM UPKEEP    //
-    //////////////////////////
-
-    
 }
