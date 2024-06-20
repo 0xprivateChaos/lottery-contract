@@ -6,7 +6,7 @@ import {Raffle} from "../../src/Raffle.sol";
 import {DeployRaffle} from "../../script/DeployRaffle.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {Vm} from "forge-std/Vm.sol";
-import {VRFCoordinatorV2PlusMock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2PlusMock.sol";
+import {VRFCoordinatorV2PlusMock} from "../mocks/VRFCoordinatorV2PlusMock.sol";
 
 contract RaffleTest is Test {
     /* Events */
